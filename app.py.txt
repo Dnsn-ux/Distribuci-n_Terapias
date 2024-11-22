@@ -1,0 +1,39 @@
+import streamlit as st
+import pandas as pd
+
+# Función para calcular la distribución de terapias
+def calcular_distribucion(sectores, terapias, dias, max_terapias_mes):
+    distribucion = []
+    terapias_restantes = terapias.copy()
+    for dia in range(1, dias + 1):
+        for i, sector in enumerate(sectores):
+            if terapias_restantes[i] > 0:
+                distribucion.append([f"Día {dia}", sector, 1])
+                terapias_restantes[i] -= 1
+    df = pd.DataFrame(distribucion, columns=["Día", "Sector", "Terapias por Día"])
+    return df
+
+# Interfaz de usuario con Streamlit
+st.title("Distribución de Terapias")
+
+# Ingreso de datos
+sectores = st.text_input("Sectores (separados por coma):").split(",")
+terapias = list(map(int, st.text_input("Terapias por sector (separadas por coma):").split(",")))
+dias = st.number_input("Días hábiles:", min_value=1, value=20)
+max_terapias_mes = st.number_input("Máximo terapias al mes:", min_value=1, value=40)
+
+# Validar que los sectores y terapias coincidan
+if len(sectores) != len(terapias):
+    st.error("Los sectores y las terapias deben coincidir en cantidad.")
+else:
+    if st.button("Calcular Distribución"):
+        # Calcular y mostrar la distribución
+        df = calcular_distribucion(sectores, terapias, dias, max_terapias_mes)
+        st.write("Distribución de Terapias:")
+        st.dataframe(df)
+
+        # Opción para exportar a Excel
+        if st.button("Exportar a Excel"):
+            # Guardar el DataFrame a un archivo Excel
+            df.to_excel("distribucion_terapias.xlsx", index=False)
+            st.success("Archivo exportado exitosamente como 'distribucion_terapias.xlsx'")
